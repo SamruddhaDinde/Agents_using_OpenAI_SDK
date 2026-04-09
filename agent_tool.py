@@ -6,9 +6,14 @@ import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import httpx
+from pydantic import BaseModel
 import smtplib
 from typing_extensions import TypedDict
 from agents import Agent, Runner, WebSearchTool, FunctionTool, function_tool, RunContextWrapper
+
+class WeatherData(BaseModel):
+    degree: int
+    condition: str
 
 @function_tool
 async def get_weather(city: str)->str:
@@ -18,11 +23,14 @@ async def get_weather(city: str)->str:
     """
     url = f'https://wttr.in/{city.lower()}?format=%C+%t'
     headers = {"User-Agent":"curl/7.68.0"}
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url, headers=headers)
-        response.raise_for_status()
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, headers=headers)
+            response.raise_for_status()
 
-    return f'The weather of {city} is {response.text.strip()}'
+        return f'The weather of {city} is {response.text.strip()}'
+    except Exception as e:
+        return f'Could not fetch weather for {city}: {str(e)}'
 
 @function_tool
 async def send_email(address: str, subject: str, body: str):
@@ -56,17 +64,18 @@ async def send_email(address: str, subject: str, body: str):
         print(f"Errors: {e}")
 
 agent = Agent(   
-    name="Assistant",
+    name="Weather Agent",
     tools=[
-        get_weather,send_email,
+        get_weather, WebSearchTool(),
 ],
+    output_type= WeatherData,
 )
 
 
 
 
 async def main():
-    result = await Runner.run(agent, "Email samruddha.dinde@outlook.com the weather in Mumbai")
+    result = await Runner.run(agent, "What is the weather in Sydney ?")
     print(result.final_output)
 
 if __name__ == "__main__":
