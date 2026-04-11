@@ -1,1 +1,2 @@
 The refund is processed for cust124 for relocation
+The refund is processed for cust124 for Customer is moving places.
