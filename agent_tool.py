@@ -72,8 +72,6 @@ agent = Agent(
 )
 
 
-
-
 async def main():
     result = await Runner.run(agent, "What is the weather in Sydney ?")
     print(result.final_output)
