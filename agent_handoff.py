@@ -1,6 +1,7 @@
 from agents import Agent, Runner, WebSearchTool, FunctionTool, function_tool, RunContextWrapper
 from pydantic import BaseModel
 import asyncio
+from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 
 @function_tool
 def get_plans():
@@ -46,7 +47,8 @@ sales_agent = Agent(
 
 reception_agent = Agent(
     name = "Reception Agent",
-    instructions="You are the customer facing agent expert in" \
+    instructions=f"{RECOMMENDED_PROMPT_PREFIX}" \
+    "You are the customer facing agent expert in" \
     "understanding what the customer needs and then route them " \
     "or handoff them to the right agent",
     handoff_description="You have two agents at your disposal:" \
@@ -56,7 +58,7 @@ reception_agent = Agent(
 )
 
 async def main():
-    result = await Runner.run(reception_agent, "Hey there, can you tell me what plans are best for me, I need fast internet? show me the fastest plan")
+    result = await Runner.run(reception_agent, "Hey there, I am cust567,  I need a refund becuase the service is slow!!!")
     print(result.final_output)
     print(result.raw_responses)
 if __name__ == "__main__":
